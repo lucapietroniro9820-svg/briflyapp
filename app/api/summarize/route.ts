@@ -21,7 +21,23 @@ export async function POST(req: Request) {
       messages: [
         {
           role: 'system',
-          content: 'Riassumi il testo in tedesco in modo chiaro e breve.'
+         content: `
+Du bist ein professioneller Assistent für Textzusammenfassungen.
+
+Aufgabe:
+- Fasse den folgenden Text auf Deutsch zusammen
+- Verwende eine klare, einfache Sprache
+- Maximal 5–7 kurze Sätze
+- Behalte die wichtigsten Informationen
+- Kein unnötiger Kommentar
+- Kein Titel
+
+Stil:
+- Sachlich
+- Gut lesbar
+- Für Studenten und Berufstätige geeignet
+`
+
         },
         {
           role: 'user',
