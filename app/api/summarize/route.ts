@@ -7,11 +7,12 @@ const openai = new OpenAI({
 
 export async function POST(req: Request) {
   try {
-    const { text } = await req.json()
+    const body = await req.json()
+    const text: string | undefined = body?.text
 
-    if (!text) {
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
       return NextResponse.json(
-        { error: 'Testo mancante' },
+        { error: 'Testo mancante o non valido' },
         { status: 400 }
       )
     }
@@ -21,38 +22,47 @@ export async function POST(req: Request) {
       messages: [
         {
           role: 'system',
-         content: `
+          content: `
 Du bist ein professioneller Assistent für Textzusammenfassungen.
 
 Aufgabe:
 - Fasse den folgenden Text auf Deutsch zusammen
-- Verwende eine klare, einfache Sprache
-- Maximal 5–7 kurze Sätze
-- Behalte die wichtigsten Informationen
-- Kein unnötiger Kommentar
-- Kein Titel
+- Verwende Stichpunkte (Bullet Points)
+- Maximal 5 Punkte
+- Jeder Punkt maximal 1–2 kurze Sätze
+- Konzentriere dich nur auf die wichtigsten Informationen
+- Kein Titel, keine Einleitung, keine Schlussfolgerung
 
 Stil:
+- Klar
 - Sachlich
-- Gut lesbar
-- Für Studenten und Berufstätige geeignet
-`
-
+- Gut strukturiert
+- Für Studium und Beruf geeignet
+          `.trim()
         },
         {
           role: 'user',
-          content: text
+          content: text.trim()
         }
-      ]
+      ],
+      temperature: 0.3
     })
 
-    const summary = completion.choices[0].message.content
+    const summary = completion.choices?.[0]?.message?.content
+
+    if (!summary) {
+      return NextResponse.json(
+        { error: 'Nessun riassunto generato' },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({ summary })
   } catch (error) {
-    console.error(error)
+    console.error('Errore OpenAI:', error)
+
     return NextResponse.json(
-      { error: 'Errore durante il riassunto' },
+      { error: 'Errore durante la generazione del riassunto' },
       { status: 500 }
     )
   }
